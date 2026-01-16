@@ -5,18 +5,27 @@ Application de chiffrement et déchiffrement de fichiers et messages avec **AES-
 ![Version](https://img.shields.io/badge/version-2.0-blue)
 ![Sécurité](https://img.shields.io/badge/security-AES--256--GCM-green)
 ![KDF](https://img.shields.io/badge/KDF-Argon2id-purple)
+![License](https://img.shields.io/badge/license-MIT-orange)
+
+<p align="center">
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5"/>
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3"/>
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript"/>
+</p>
 
 ---
 
 ## 📋 Table des Matières
 
 - [Fonctionnalités](#-fonctionnalités)
+- [Démonstration](#-démonstration)
 - [Installation](#-installation)
 - [Guide d'Utilisation](#-guide-dutilisation)
 - [Modes de Fonctionnement](#-modes-de-fonctionnement)
 - [Sécurité Technique](#-sécurité-technique)
 - [Dénégation Plausible](#-dénégation-plausible)
-- [Format des Données](#-format-des-données)
+- [Audit de Sécurité](#-audit-de-sécurité)
+- [Easter Egg](#-easter-egg)
 
 ---
 
@@ -31,27 +40,47 @@ Application de chiffrement et déchiffrement de fichiers et messages avec **AES-
 | 🛡️ **Dénégation Plausible** | Double mot de passe pour données réelles/factices |
 | 📋 **Copie Rapide** | Copie dans le presse-papiers en un clic |
 | 📥 **Export/Import** | Gestion des clés en Base64 |
+| 🎮 **Easter Egg** | Code Konami pour une surprise ! |
+
+---
+
+## 🎬 Démonstration
+
+L'application utilise un design **Chromia Dashboard** avec :
+- Thème sombre élégant
+- Accents verts (#4ade80)
+- Interface responsive
 
 ---
 
 ## 🚀 Installation
 
-Aucune installation requise ! L'application fonctionne entièrement dans le navigateur.
+### Option 1 : Cloner le dépôt
 
 ```bash
-# Cloner ou télécharger le projet
-git clone <repository-url>
+# Cloner le projet
+git clone https://github.com/MallauryPRE/MC4-CryptoVault.git
 
-# Ouvrir index.html dans un navigateur moderne
+# Aller dans le dossier
+cd MC4-CryptoVault
+
+# Ouvrir dans le navigateur
 open index.html    # macOS
 xdg-open index.html  # Linux
 start index.html   # Windows
 ```
 
+### Option 2 : Télécharger le ZIP
+
+1. Cliquer sur **Code** > **Download ZIP**
+2. Extraire l'archive
+3. Ouvrir `index.html`
+
 ### Prérequis
 
 - Navigateur moderne (Chrome, Firefox, Safari, Edge)
 - Support de Web Crypto API (tous les navigateurs modernes)
+- Aucune dépendance serveur requise
 
 ---
 
@@ -100,8 +129,6 @@ start index.html   # Windows
 └──────────────────────────────────────────┘
 ```
 
-**Cas d'usage** : Partage sécurisé avec échange de clé préalable
-
 ### 🔒 Mode Mot de Passe
 
 ```
@@ -118,8 +145,6 @@ start index.html   # Windows
 └──────────────────────────────────────────┘
 ```
 
-**Cas d'usage** : Protection par mot de passe mémorisable
-
 ### 🛡️ Mode Dénégation Plausible
 
 ```
@@ -134,8 +159,6 @@ start index.html   # Windows
 │  └─────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────┘
 ```
-
-**Cas d'usage** : Protection en cas de contrainte physique
 
 ---
 
@@ -152,9 +175,9 @@ start index.html   # Windows
 | Tag | 128 bits (authentification) |
 
 **Avantages** :
-- Chiffrement authentifié (confidentialité + intégrité)
-- Accélération matérielle (AES-NI)
-- Standard NIST
+- ✅ Chiffrement authentifié (confidentialité + intégrité)
+- ✅ Accélération matérielle (AES-NI)
+- ✅ Standard NIST
 
 ### Argon2id
 
@@ -167,9 +190,9 @@ start index.html   # Windows
 | Type | Argon2id | Hybride i/d |
 
 **Avantages** :
-- Résistant aux attaques GPU/ASIC
-- Vainqueur de la Password Hashing Competition
-- Protection contre attaques par canal auxiliaire
+- ✅ Résistant aux attaques GPU/ASIC
+- ✅ Vainqueur de la Password Hashing Competition (2015)
+- ✅ Protection contre attaques par canal auxiliaire
 
 ---
 
@@ -187,61 +210,56 @@ La dénégation plausible permet de nier l'existence de données secrètes. En c
 | **Non-prouvabilité** | L'attaquant ne peut pas prouver l'existence du second espace |
 | **Crédibilité** | Les données leurre doivent être crédibles |
 
-### Recommandations
+---
 
-> ⚠️ **Pour une sécurité optimale :**
+## 🔍 Audit de Sécurité
 
-1. **Données leurre crédibles** : Utilisez des données qui semblent légitimes
-2. **Mots de passe différents** : Utilisez des mots de passe mémorisables mais distincts
-3. **Pas de traces** : Ne stockez pas vos mots de passe
-4. **Comportement cohérent** : Accédez régulièrement aux deux espaces
+Un audit de sécurité complet a été réalisé. Voir le fichier [AUDIT.md](AUDIT.md) pour les détails.
+
+### Résumé
+
+| Test | Résultat |
+|------|----------|
+| Variables globales exposées | ✅ Aucune |
+| Persistance DOM | ✅ Nettoyage automatique |
+| Clés extractables | ✅ Non-extractables |
+| Logs sensibles | ✅ Aucun |
+
+### Vulnérabilité Corrigée
+
+- **CVE-LOCAL-001** : Persistance des données sensibles dans le DOM (CORRIGÉE)
 
 ---
 
-## 📦 Format des Données
+## 🎮 Easter Egg
 
-### Message Chiffré (Standard)
+Un easter egg Matrix est caché dans l'application !
 
-```
-┌────────────────────────────────────────┐
-│ IV (12 bytes) │ Ciphertext │ GCM Tag  │
-└────────────────────────────────────────┘
-```
+**Code Konami** : `↑ ↑ ↓ ↓ ← → ← → B A`
 
-### Message Chiffré (Mot de Passe)
+---
+
+## 📁 Structure du Projet
 
 ```
-┌──────────────────────────────────────────────────┐
-│ Salt (16 bytes) │ IV (12 bytes) │ Ciphertext... │
-└──────────────────────────────────────────────────┘
-```
-
-### Fichier Chiffré
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│ [Salt] │ IV │ Encrypted(FilenameLen + Filename + FileData) │
-└──────────────────────────────────────────────────────────────┘
-```
-
-### Conteneur Deniable
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ Marker (1) │ RealLen (4) │ DecoyLen (4) │ RealData │ DecoyData    │
-└─────────────────────────────────────────────────────────────────────┘
+MC4-CryptoVault/
+├── index.html          # Interface utilisateur
+├── styles.css          # Thème Chromia Dashboard
+├── crypto.js           # Module cryptographique
+├── app.js              # Logique applicative
+├── README.md           # Documentation
+├── AUDIT.md            # Rapport de sécurité
+└── RAPPORT_PROJET.odt  # Rapport complet
 ```
 
 ---
 
-## 📄 Fichiers du Projet
+## 🛠️ Technologies
 
-| Fichier | Description |
-|---------|-------------|
-| `index.html` | Interface utilisateur |
-| `styles.css` | Styles et thème sombre |
-| `crypto.js` | Module cryptographique |
-| `app.js` | Logique applicative |
+- **Web Crypto API** : Opérations cryptographiques natives du navigateur
+- **Argon2-browser** : Librairie WASM pour Argon2id
+- **JavaScript ES6+** : Modules, Promises, async/await
+- **CSS3** : Variables CSS, Flexbox, Grid
 
 ---
 
@@ -253,9 +271,23 @@ La dénégation plausible permet de nier l'existence de données secrètes. En c
 
 ---
 
+## 📚 Références
+
+- [NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final) - GCM Mode
+- [RFC 9106](https://datatracker.ietf.org/doc/rfc9106/) - Argon2
+- [Web Crypto API](https://www.w3.org/TR/WebCryptoAPI/) - W3C
+
+---
+
 ## 📜 Licence
 
 MIT License - Libre d'utilisation, modification et distribution.
+
+---
+
+## 👤 Auteur
+
+**Mallaury PRE** - MC4 Cryptographie
 
 ---
 
