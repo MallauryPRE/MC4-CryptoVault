@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoVault - Chiffrement Sécurisé</title>
+    <meta name="description"
+        content="Application de chiffrement et déchiffrement de fichiers et messages avec AES-256-GCM et Argon2">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Argon2 WASM Library -->
+    <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2-bundled.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🔐</div>
+                <h1>CryptoVault</h1>
+            </div>
+            <p class="tagline">AES-256-GCM + Argon2id</p>
+        </header>
+
+        <!-- Mode Selector -->
+        <div class="mode-selector glass-card">
+            <div class="mode-toggle">
+                <button class="mode-btn active" data-mode="standard" id="modeStandard">
+                    <span class="mode-icon">🔑</span>
+                    <span>Mode Standard</span>
+                </button>
+                <button class="mode-btn" data-mode="password" id="modePassword">
+                    <span class="mode-icon">🔒</span>
+                    <span>Mode Mot de Passe</span>
+                </button>
+                <button class="mode-btn" data-mode="deniable" id="modeDeniable">
+                    <span class="mode-icon">🛡️</span>
+                    <span>Dénégation Plausible</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Standard Mode: Key Management Section -->
+        <section class="key-section glass-card" id="standardModeSection">
+            <div class="section-header">
+                <h2>🔑 Gestion de la Clé</h2>
+                <span class="key-status" id="keyStatus">Aucune clé</span>
+            </div>
+            <div class="key-controls">
+                <button class="btn btn-primary" id="generateKeyBtn">
+                    <span class="btn-icon">⚡</span>
+                    Générer une clé
+                </button>
+                <button class="btn btn-secondary" id="exportKeyBtn" disabled>
+                    <span class="btn-icon">📤</span>
+                    Exporter
+                </button>
+                <button class="btn btn-secondary" id="importKeyBtn">
+                    <span class="btn-icon">📥</span>
+                    Importer
+                </button>
+            </div>
+            <div class="key-display hidden" id="keyDisplay">
+                <label>Clé (Base64):</label>
+                <div class="key-value-container">
+                    <input type="text" id="keyValue" readonly>
+                    <button class="btn btn-icon-only" id="copyKeyBtn" title="Copier">📋</button>
+                </div>
+            </div>
+            <div class="key-import hidden" id="keyImport">
+                <label>Importer une clé (Base64):</label>
+                <div class="key-value-container">
+                    <input type="text" id="importKeyValue" placeholder="Collez votre clé ici...">
+                    <button class="btn btn-primary" id="confirmImportBtn">Importer</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Password Mode Section -->
+        <section class="password-section glass-card hidden" id="passwordModeSection">
+            <div class="section-header">
+                <h2>🔒 Mode Mot de Passe</h2>
+                <span class="badge badge-info">Argon2id</span>
+            </div>
+            <p class="section-description">
+                La clé de chiffrement est dérivée de votre mot de passe via Argon2id (résistant aux attaques GPU/ASIC).
+            </p>
+            <div class="form-group">
+                <label for="passwordInput">Mot de passe:</label>
+                <div class="password-input-container">
+                    <input type="password" id="passwordInput" placeholder="Entrez votre mot de passe...">
+                    <button class="btn btn-icon-only toggle-password" id="togglePassword"
+                        title="Afficher/Masquer">👁️</button>
+                </div>
+            </div>
+            <div class="password-strength" id="passwordStrength">
+                <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+                <span class="strength-text" id="strengthText">Force du mot de passe</span>
+            </div>
+        </section>
+
+        <!-- Deniable Mode Section -->
+        <section class="deniable-section glass-card hidden" id="deniableModeSection">
+            <div class="section-header">
+                <h2>🛡️ Dénégation Plausible</h2>
+                <span class="badge badge-warning">Avancé</span>
+            </div>
+            <div class="deniable-info">
+                <div class="info-box">
+                    <p>⚠️ <strong>Comment ça marche:</strong></p>
+                    <ul>
+                        <li>Créez deux espaces chiffrés: <strong>réel</strong> et <strong>leurre</strong></li>
+                        <li>Le mot de passe <strong>réel</strong> révèle vos vraies données</li>
+                        <li>Le mot de passe <strong>leurre</strong> révèle des données factices</li>
+                        <li>Impossible de prouver l'existence du second espace</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Deniable Creation -->
+            <div class="deniable-create" id="deniableCreate">
+                <h3>Créer un conteneur deniable</h3>
+                <div class="dual-password-grid">
+                    <div class="password-group">
+                        <label for="realPassword">🔐 Mot de passe RÉEL:</label>
+                        <input type="password" id="realPassword" placeholder="Vos vraies données...">
+                    </div>
+                    <div class="password-group">
+                        <label for="decoyPassword">🎭 Mot de passe LEURRE:</label>
+                        <input type="password" id="decoyPassword" placeholder="Données factices...">
+                    </div>
+                </div>
+                <div class="dual-data-grid">
+                    <div class="data-group">
+                        <label for="realData">📄 Données RÉELLES:</label>
+                        <textarea id="realData" placeholder="Vos vraies données secrètes..." rows="3"></textarea>
+                    </div>
+                    <div class="data-group">
+                        <label for="decoyData">📄 Données LEURRE:</label>
+                        <textarea id="decoyData" placeholder="Données à montrer sous contrainte..." rows="3"></textarea>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-full" id="createDeniableBtn">
+                    <span class="btn-icon">🛡️</span>
+                    Créer le conteneur deniable
+                </button>
+                <div class="result-group hidden" id="deniableResult">
+                    <label>Conteneur chiffré:</label>
+                    <div class="result-container">
+                        <textarea id="deniableOutput" readonly rows="3"></textarea>
+                        <button class="btn btn-icon-only copy-btn" data-target="deniableOutput"
+                            title="Copier">📋</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deniable Open -->
+            <div class="deniable-open">
+                <h3>Ouvrir un conteneur</h3>
+                <div class="form-group">
+                    <label for="deniableInput">Conteneur chiffré:</label>
+                    <textarea id="deniableInput" placeholder="Collez le conteneur chiffré..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="openPassword">Mot de passe:</label>
+                    <input type="password" id="openPassword" placeholder="Mot de passe réel ou leurre...">
+                </div>
+                <button class="btn btn-primary btn-full" id="openDeniableBtn">
+                    <span class="btn-icon">🔓</span>
+                    Ouvrir le conteneur
+                </button>
+                <div class="result-group hidden" id="openDeniableResult">
+                    <label>Données déchiffrées:</label>
+                    <div class="result-container">
+                        <textarea id="openDeniableOutput" readonly rows="3"></textarea>
+                        <button class="btn btn-icon-only copy-btn" data-target="openDeniableOutput"
+                            title="Copier">📋</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab Navigation -->
+        <nav class="tabs" id="mainTabs">
+            <button class="tab active" data-tab="messages">
+                <span class="tab-icon">💬</span>
+                Messages
+            </button>
+            <button class="tab" data-tab="files">
+                <span class="tab-icon">📁</span>
+                Fichiers
+            </button>
+        </nav>
+
+        <!-- Messages Tab -->
+        <section class="tab-content active" id="messagesTab">
+            <div class="crypto-grid">
+                <!-- Encrypt Message -->
+                <div class="crypto-card glass-card">
+                    <h3>🔒 Chiffrer un message</h3>
+                    <div class="form-group">
+                        <label for="plaintext">Message à chiffrer:</label>
+                        <textarea id="plaintext" placeholder="Entrez votre message secret..." rows="4"></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="encryptMsgBtn">
+                        <span class="btn-icon">🔐</span>
+                        Chiffrer
+                    </button>
+                    <div class="result-group hidden" id="encryptResult">
+                        <label>Message chiffré:</label>
+                        <div class="result-container">
+                            <textarea id="ciphertext" readonly rows="3"></textarea>
+                            <button class="btn btn-icon-only copy-btn" data-target="ciphertext"
+                                title="Copier">📋</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decrypt Message -->
+                <div class="crypto-card glass-card">
+                    <h3>🔓 Déchiffrer un message</h3>
+                    <div class="form-group">
+                        <label for="ciphertextInput">Message chiffré:</label>
+                        <textarea id="ciphertextInput" placeholder="Collez le message chiffré..." rows="4"></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="decryptMsgBtn">
+                        <span class="btn-icon">🔓</span>
+                        Déchiffrer
+                    </button>
+                    <div class="result-group hidden" id="decryptResult">
+                        <label>Message déchiffré:</label>
+                        <div class="result-container">
+                            <textarea id="decryptedText" readonly rows="3"></textarea>
+                            <button class="btn btn-icon-only copy-btn" data-target="decryptedText"
+                                title="Copier">📋</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Files Tab -->
+        <section class="tab-content" id="filesTab">
+            <div class="crypto-grid">
+                <!-- Encrypt File -->
+                <div class="crypto-card glass-card">
+                    <h3>🔒 Chiffrer un fichier</h3>
+                    <div class="file-drop-zone" id="encryptDropZone">
+                        <div class="drop-icon">📄</div>
+                        <p>Glissez un fichier ici ou</p>
+                        <label class="file-input-label">
+                            <input type="file" id="fileToEncrypt" hidden>
+                            <span class="btn btn-secondary">Parcourir</span>
+                        </label>
+                        <p class="file-name" id="encryptFileName"></p>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="encryptFileBtn" disabled>
+                        <span class="btn-icon">🔐</span>
+                        Chiffrer le fichier
+                    </button>
+                    <div class="result-group hidden" id="encryptFileResult">
+                        <p class="success-msg">✅ Fichier chiffré avec succès!</p>
+                        <button class="btn btn-secondary btn-full" id="downloadEncryptedBtn">
+                            <span class="btn-icon">📥</span>
+                            Télécharger (.encrypted)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Decrypt File -->
+                <div class="crypto-card glass-card">
+                    <h3>🔓 Déchiffrer un fichier</h3>
+                    <div class="file-drop-zone" id="decryptDropZone">
+                        <div class="drop-icon">🔐</div>
+                        <p>Glissez un fichier .encrypted ici ou</p>
+                        <label class="file-input-label">
+                            <input type="file" id="fileToDecrypt" accept=".encrypted" hidden>
+                            <span class="btn btn-secondary">Parcourir</span>
+                        </label>
+                        <p class="file-name" id="decryptFileName"></p>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="decryptFileBtn" disabled>
+                        <span class="btn-icon">🔓</span>
+                        Déchiffrer le fichier
+                    </button>
+                    <div class="result-group hidden" id="decryptFileResult">
+                        <p class="success-msg">✅ Fichier déchiffré avec succès!</p>
+                        <button class="btn btn-secondary btn-full" id="downloadDecryptedBtn">
+                            <span class="btn-icon">📥</span>
+                            Télécharger le fichier original
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notifications -->
+        <div class="notification hidden" id="notification">
+            <span class="notification-icon"></span>
+            <span class="notification-message"></span>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay hidden" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <p>Dérivation de clé en cours...</p>
+        </div>
+
+        <!-- Footer with Easter Egg Hint -->
+        <footer class="easter-egg-hint">
+            <p>Easter Egg: <code>↑ ↑ ↓ ↓ ← → ← → B A</code></p>
+        </footer>
+    </div>
+
+    <script src="crypto.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
